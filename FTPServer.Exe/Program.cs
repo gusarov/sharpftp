@@ -1,22 +1,23 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.Specialized;
+using System.Configuration;
 using System.IO;
+using System.Linq;
 using System.Reflection;
-using Microsoft.Extensions.Configuration;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace FTPServer.Cmd
+namespace FTPServer.Exe
 {
 	class Program
 	{
 		static void Main(string[] args)
 		{
 			var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-			var builder = new ConfigurationBuilder()
-				.SetBasePath(baseDir)
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-				;
-			var configuration = builder.Build();
-			var dir = configuration["dir"];
-			var portStr = configuration["port"];
+
+			var dir = ConfigurationManager.AppSettings["dir"];
+			var portStr = ConfigurationManager.AppSettings["port"];
 			var port = string.IsNullOrEmpty(portStr)
 				? default(ushort?)
 				: ushort.Parse(portStr)
@@ -32,10 +33,10 @@ namespace FTPServer.Cmd
 				Dir = dir,
 			};
 
-			var auth  = configuration.GetSection("auth");
-			foreach (var item in auth.GetChildren())
+			var auth = ConfigurationManager.GetSection("auth") as NameValueCollection;
+			foreach (string user in auth)
 			{
-				cfg.Credentials.Add(item.Key, item.Value);
+				cfg.Credentials.Add(user, auth[user]);
 			}
 
 			var host = new FTPHost(cfg);

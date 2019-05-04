@@ -3,24 +3,30 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.539
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTPServer", "FTPServer\FTPServer.csproj", "{5340EF8C-BF0E-4481-8ECC-C1159B9705D0}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FTPServer.Cmd", "FTPServer.Cmd\FTPServer.Cmd.csproj", "{58214DD6-4702-4DE0-B59A-B820A7B0F8CC}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTPServer.Cmd", "FTPServer.Cmd\FTPServer.Cmd.csproj", "{58214DD6-4702-4DE0-B59A-B820A7B0F8CC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTPServer.Exe", "FTPServer.Exe\FTPServer.Exe.csproj", "{8CBA2F72-787E-42DD-A0B7-82B7A3D73B23}"
+EndProject
+Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "FTPServer.Shared", "FTPServer.Shared\FTPServer.Shared.shproj", "{BD6130EB-EB95-4731-983A-C99408074C12}"
 EndProject
 Global
+	GlobalSection(SharedMSBuildProjectFiles) = preSolution
+		FTPServer.Shared\FTPServer.Shared.projitems*{8cba2f72-787e-42dd-a0b7-82b7a3d73b23}*SharedItemsImports = 4
+		FTPServer.Shared\FTPServer.Shared.projitems*{bd6130eb-eb95-4731-983a-c99408074c12}*SharedItemsImports = 13
+	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{5340EF8C-BF0E-4481-8ECC-C1159B9705D0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5340EF8C-BF0E-4481-8ECC-C1159B9705D0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5340EF8C-BF0E-4481-8ECC-C1159B9705D0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5340EF8C-BF0E-4481-8ECC-C1159B9705D0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{58214DD6-4702-4DE0-B59A-B820A7B0F8CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{58214DD6-4702-4DE0-B59A-B820A7B0F8CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{58214DD6-4702-4DE0-B59A-B820A7B0F8CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{58214DD6-4702-4DE0-B59A-B820A7B0F8CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8CBA2F72-787E-42DD-A0B7-82B7A3D73B23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8CBA2F72-787E-42DD-A0B7-82B7A3D73B23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8CBA2F72-787E-42DD-A0B7-82B7A3D73B23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8CBA2F72-787E-42DD-A0B7-82B7A3D73B23}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
