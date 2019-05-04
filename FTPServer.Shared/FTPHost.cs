@@ -25,8 +25,9 @@ namespace FTPServer
 
 		TcpListener _listener;
 
-		public async void Listen(ushort? port = null)
+		public async void Listen()
 		{
+			var port = _config.Port;
 			if (port == null)
 			{
 				port = 21;
@@ -43,6 +44,8 @@ namespace FTPServer
 
 		class FtpClient
 		{
+			static Random rnd = new Random();
+
 			private readonly FtpHostConfig _config;
 
 			private readonly TcpClient _client;
@@ -340,15 +343,32 @@ namespace FTPServer
 									}
 									catch { }
 								}
-								_dataListener = new TcpListener(IPAddress.Any, 0);
-								_dataListener.Start();
+								if (_config.DataPortFrom.HasValue && _config.DataPortTo.HasValue)
+								{
+									while(true)
+									{
+										try
+										{
+											var port = rnd.Next(_config.DataPortTo.Value - _config.DataPortFrom.Value) + _config.DataPortFrom.Value;
+											_dataListener = new TcpListener(IPAddress.Any, port);
+											_dataListener.Start(); // just try
+											break;
+										}
+										catch { }
+									}
+								}
+								else
+								{
+									_dataListener = new TcpListener(IPAddress.Any, 0);
+									_dataListener.Start();
+								}
 								DataConnection();
 
 								port = ((IPEndPoint)_dataListener.LocalEndpoint).Port;
 								var h = (byte)(port >> 8);
 								var l = (byte)(port % 256);
 								//_writer.WriteLine("200 Successful");
-
+								Console.WriteLine("Data port opened: " + port);
 								// todo IPv6 response 228 long passive mode - lack of documentation
 								var rline = $"227 Entering Passive Mode ({ip.ToString().Replace('.', ',')},{h},{l}).";
 								_writer.WriteLine(rline);

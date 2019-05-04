@@ -17,11 +17,9 @@ namespace FTPServer.Exe
 			var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
 
 			var dir = ConfigurationManager.AppSettings["dir"];
-			var portStr = ConfigurationManager.AppSettings["port"];
-			var port = string.IsNullOrEmpty(portStr)
-				? default(ushort?)
-				: ushort.Parse(portStr)
-				;
+			var port = ParseUshort(ConfigurationManager.AppSettings["port"]);
+			var dataPortFrom = ParseUshort(ConfigurationManager.AppSettings["dataPortFrom"]);
+			var dataPortTo = ParseUshort(ConfigurationManager.AppSettings["dataPortTo"]);
 
 			if (!Path.IsPathRooted(dir))
 			{
@@ -31,6 +29,9 @@ namespace FTPServer.Exe
 			var cfg = new FtpHostConfig
 			{
 				Dir = dir,
+				Port = port,
+				DataPortFrom = dataPortFrom,
+				DataPortTo = dataPortTo,
 			};
 
 			var auth = ConfigurationManager.GetSection("auth") as NameValueCollection;
@@ -40,8 +41,17 @@ namespace FTPServer.Exe
 			}
 
 			var host = new FTPHost(cfg);
-			host.Listen(port);
+			host.Listen();
 			Console.ReadLine();
 		}
+
+		static ushort? ParseUshort(string data)
+		{
+			return string.IsNullOrEmpty(data)
+				? default(ushort?)
+				: ushort.Parse(data)
+				;
+		}
+
 	}
 }
