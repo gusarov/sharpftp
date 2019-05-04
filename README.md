@@ -18,6 +18,8 @@ app.config:
 	<auth>
 		<add key="bob" value="123" />
 		<add key="alice" value="321" />
+		<add key="dataPortFrom" value="20000"/>
+		<add key="dataPortTo" value="20999"/>
 	</auth>
 </configuration>
 ```
