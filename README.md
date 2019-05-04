@@ -22,6 +22,9 @@ app.config:
 </configuration>
 ```
 
+Automatic stateful firewall rule for Windows:
+```netsh advfirewall set global StatefulFtp enable```
+
 ## .NET Core Console App
 
 appsettings.json:
