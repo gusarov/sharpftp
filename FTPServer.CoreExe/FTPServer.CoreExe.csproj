@@ -20,4 +20,6 @@
     </None>
   </ItemGroup>
 
+  <Import Project="..\FTPServer.Shared\FTPServer.Shared.projitems" Label="Shared" />
+
 </Project>
