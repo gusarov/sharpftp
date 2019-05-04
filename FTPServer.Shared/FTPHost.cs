@@ -170,6 +170,7 @@ namespace FTPServer
 							{
 								EnsureLoggedIn();
 								var file = Path.Combine(_config.Dir, data);
+								CheckPath(file);
 								if (_dataClient == null)
 								{
 									_writer.WriteLine("150 transferring");
@@ -202,6 +203,7 @@ namespace FTPServer
 							{
 								EnsureLoggedIn();
 								var file = Path.Combine(_config.Dir, data);
+								CheckPath(file);
 								if (_dataClient == null)
 								{
 									_writer.WriteLine("150 transferring");
@@ -247,6 +249,7 @@ namespace FTPServer
 							{
 								EnsureLoggedIn();
 								var file = Path.Combine(_config.Dir, data);
+								CheckPath(file);
 								Catch(() =>
 								{
 									if (File.Exists(file))
@@ -265,7 +268,7 @@ namespace FTPServer
 							{
 								EnsureLoggedIn();
 								var file = Path.Combine(_config.Dir, data);
-
+								CheckPath(file);
 								Catch(() =>
 								{
 									if (File.Exists(file))
@@ -280,7 +283,7 @@ namespace FTPServer
 							{
 								EnsureLoggedIn();
 								var file = Path.Combine(_config.Dir, data);
-
+								CheckPath(file);
 								rnfr = file;
 								_writer.WriteLine("350 OK RNFR");
 								break;
@@ -289,7 +292,7 @@ namespace FTPServer
 							{
 								EnsureLoggedIn();
 								var file = Path.Combine(_config.Dir, data);
-
+								CheckPath(file);
 								Catch(() =>
 								{
 									File.Move(rnfr, file);
@@ -302,7 +305,7 @@ namespace FTPServer
 								_writer.WriteLine("200 OK Noop");
 								break;
 							}
-						case "QUIT": // TODO this is also RFC required minimum command
+						case "QUIT": // rfc minimum
 							{
 								_writer.WriteLine("221 OK Quit");
 
@@ -393,17 +396,16 @@ namespace FTPServer
 							}
 						case "CWD":
 							{
+								if (Path.DirectorySeparatorChar != '/') // for Windows
+								{
+									data = data.Replace('/', Path.DirectorySeparatorChar);
+								}
+								data = data.TrimStart(Path.DirectorySeparatorChar);
 								var newDir = data;
 								newDir = Path.GetFullPath(Path.Combine(_config.Dir, newDir));
-								if (newDir.ToLowerInvariant().StartsWith(_config.Dir.ToLowerInvariant()))
-								{
-									cd = newDir.Substring(_config.Dir.TrimEnd('\\', '/').Length);
-									_writer.WriteLine($@"257 ""{cd}"" is current directory.");
-								}
-								else
-								{
-									_writer.WriteLine($@"550 illegal dirrectory navigation.");
-								}
+								CheckPath(newDir);
+								cd = newDir.Substring(_config.Dir.TrimEnd('\\', '/').Length);
+								_writer.WriteLine($@"257 ""{cd}"" is current directory.");
 								break;
 							}
 						case "SYST":
@@ -480,6 +482,17 @@ namespace FTPServer
 						_client?.Close();
 					}
 					catch { }
+				}
+			}
+
+			void CheckPath(string path)
+			{
+				if (!path.ToLowerInvariant().TrimEnd('\\', '/').StartsWith(_config.Dir.ToLowerInvariant()))
+				{
+					throw new ProtocolException("Illegal dirrectory navigation")
+					{
+						Code = 550,
+					};
 				}
 			}
 
