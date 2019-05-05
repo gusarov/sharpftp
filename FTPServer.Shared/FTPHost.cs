@@ -133,6 +133,43 @@ namespace FTPServer
 
 					switch (cmd.ToUpperInvariant())
 					{
+						case "MLSD": // recommended for deterministic list parsing
+							{
+								EnsureLoggedIn();
+								_writer.WriteLine("150 MLSD...");
+								if (await EnsureData())
+								{
+									try
+									{
+										_dataWriter.AutoFlush = false;
+										var root = _config.Dir.TrimEnd(Path.DirectorySeparatorChar).Length;
+										foreach (var file in new DirectoryInfo(_config.Dir).GetFiles())
+										{
+											_dataWriter.WriteLine(
+$"type=file;size={file.Length};modify={file.LastWriteTimeUtc:yyyyMMddHHmmss.fff};create={file.LastWriteTimeUtc:yyyyMMddHHmmss.fff}; {file.FullName.Substring(root)}");
+
+										}
+										_dataWriter.Flush();
+									}
+									finally
+									{
+										_dataWriter.AutoFlush = true;
+									}
+									_dataStream.Close();
+									_writer.WriteLine("226 MLSD Completed");
+								}
+								break;
+							}
+						case "SITE":
+						case "HELP":
+							{
+								_writer.WriteLine("211-Commands Available:");
+								_writer.WriteLine(" MLSD");
+								_writer.WriteLine(" RNFR");
+								_writer.WriteLine(" RNTO");
+								_writer.WriteLine("211 END");
+								break;
+							}
 						case "LIST": // not RFC required but defacto standard
 							{
 								EnsureLoggedIn();
@@ -172,8 +209,8 @@ namespace FTPServer
 						case "RETR": // required minimum by RFC
 							{
 								EnsureLoggedIn();
-								var file = Path.Combine(_config.Dir, data);
-								CheckPath(file);
+								var file = CheckPath(data);
+								
 								if (_dataClient == null)
 								{
 									_writer.WriteLine("150 transferring");
@@ -205,8 +242,8 @@ namespace FTPServer
 						case "STOR": // required minimum by RFC
 							{
 								EnsureLoggedIn();
-								var file = Path.Combine(_config.Dir, data);
-								CheckPath(file);
+								var file = CheckPath(data);
+								
 								if (_dataClient == null)
 								{
 									_writer.WriteLine("150 transferring");
@@ -251,8 +288,8 @@ namespace FTPServer
 						case "SIZE":
 							{
 								EnsureLoggedIn();
-								var file = Path.Combine(_config.Dir, data);
-								CheckPath(file);
+								var file = CheckPath(data);
+								
 								Catch(() =>
 								{
 									if (File.Exists(file))
@@ -270,8 +307,7 @@ namespace FTPServer
 						case "DELE":
 							{
 								EnsureLoggedIn();
-								var file = Path.Combine(_config.Dir, data);
-								CheckPath(file);
+								var file = CheckPath(data);
 								Catch(() =>
 								{
 									if (File.Exists(file))
@@ -285,8 +321,7 @@ namespace FTPServer
 						case "RNFR":
 							{
 								EnsureLoggedIn();
-								var file = Path.Combine(_config.Dir, data);
-								CheckPath(file);
+								var file = CheckPath(data);
 								rnfr = file;
 								_writer.WriteLine("350 OK RNFR");
 								break;
@@ -299,7 +334,7 @@ namespace FTPServer
 								Catch(() =>
 								{
 									File.Move(rnfr, file);
-									_writer.WriteLine("200 OK RNTO");
+									_writer.WriteLine("250 OK RNTO");
 								});
 								break;
 							}
@@ -374,11 +409,6 @@ namespace FTPServer
 								_writer.WriteLine(rline);
 								break;
 							}
-						case "HELP":
-							{
-								_writer.WriteLine("501 Parameter not understood");
-								break;
-							}
 						case "OPTS":
 							{
 								_writer.WriteLine("200 Successful");
@@ -406,6 +436,7 @@ namespace FTPServer
 							{
 								_writer.WriteLine("211-Extensions Supported:");
 								_writer.WriteLine(" UTF8");
+								_writer.WriteLine(" MLST Type*;Size*;Modify*;Create*;"); // Both MLST & MLSD
 								_writer.WriteLine("211 END");
 								break;
 							}
@@ -416,14 +447,7 @@ namespace FTPServer
 							}
 						case "CWD":
 							{
-								if (Path.DirectorySeparatorChar != '/') // for Windows
-								{
-									data = data.Replace('/', Path.DirectorySeparatorChar);
-								}
-								data = data.TrimStart(Path.DirectorySeparatorChar);
-								var newDir = data;
-								newDir = Path.GetFullPath(Path.Combine(_config.Dir, newDir));
-								CheckPath(newDir);
+								var newDir = CheckPath(data);
 								cd = newDir.Substring(_config.Dir.TrimEnd('\\', '/').Length);
 								_writer.WriteLine($@"257 ""{cd}"" is current directory.");
 								break;
@@ -505,8 +529,15 @@ namespace FTPServer
 				}
 			}
 
-			void CheckPath(string path)
+			string CheckPath(string path)
 			{
+				if (Path.DirectorySeparatorChar != '/') // for OS with different separator
+				{
+					path = path.Replace('/', Path.DirectorySeparatorChar);
+				}
+				path = path.TrimStart(Path.DirectorySeparatorChar);
+				path = Path.GetFullPath(Path.Combine(_config.Dir, path));
+
 				if (!path.ToLowerInvariant().TrimEnd('\\', '/').StartsWith(_config.Dir.ToLowerInvariant()))
 				{
 					throw new ProtocolException("Illegal dirrectory navigation")
@@ -514,6 +545,8 @@ namespace FTPServer
 						Code = 550,
 					};
 				}
+
+				return path;
 			}
 
 			void EnsureLoggedIn()
