@@ -35,7 +35,10 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
+    <Reference Include="System.Configuration.Install" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Management" />
+    <Reference Include="System.ServiceProcess" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -46,6 +49,18 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TheServiceInstaller.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="TheServiceInstaller.Designer.cs">
+      <DependentUpon>TheServiceInstaller.cs</DependentUpon>
+    </Compile>
+    <Compile Include="TheWindowsService.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="TheWindowsService.Designer.cs">
+      <DependentUpon>TheWindowsService.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -54,6 +69,11 @@
     <None Include="_data\test.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="TheServiceInstaller.resx">
+      <DependentUpon>TheServiceInstaller.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\FTPServer.Shared\FTPServer.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

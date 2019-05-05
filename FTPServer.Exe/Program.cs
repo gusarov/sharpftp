@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Configuration;
+using System.Configuration.Install;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.ServiceProcess;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,44 +16,34 @@ namespace FTPServer.Exe
 	{
 		static void Main(string[] args)
 		{
-			var baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-
-			var dir = ConfigurationManager.AppSettings["dir"];
-			var port = ParseUshort(ConfigurationManager.AppSettings["port"]);
-			var dataPortFrom = ParseUshort(ConfigurationManager.AppSettings["dataPortFrom"]);
-			var dataPortTo = ParseUshort(ConfigurationManager.AppSettings["dataPortTo"]);
-
-			if (!Path.IsPathRooted(dir))
+			var svc = new TheWindowsService();
+			if (args.Any(x => string.Equals("-service", x, StringComparison.OrdinalIgnoreCase)))
 			{
-				dir = Path.Combine(baseDir, dir);
+				ServiceBase.Run(new ServiceBase[] { svc });
 			}
-
-			var cfg = new FtpHostConfig
+			else if (args.Any(x => string.Equals("-install", x, StringComparison.OrdinalIgnoreCase)))
 			{
-				Dir = dir,
-				Port = port,
-				DataPortFrom = dataPortFrom,
-				DataPortTo = dataPortTo,
-			};
-
-			var auth = ConfigurationManager.GetSection("auth") as NameValueCollection;
-			foreach (string user in auth)
-			{
-				cfg.Credentials.Add(user, auth[user]);
+				ManagedInstallerClass.InstallHelper(new[] { Assembly.GetExecutingAssembly().Location });
 			}
-
-			var host = new FTPHost(cfg);
-			host.Listen();
-			Console.ReadLine();
+			else if (args.Any(x => string.Equals("-uninstall", x, StringComparison.OrdinalIgnoreCase)))
+			{
+				ManagedInstallerClass.InstallHelper(new[] { "/u", Assembly.GetExecutingAssembly().Location });
+			}
+			else
+			{
+				Console.WriteLine("-service: use to run as windows service");
+				Console.WriteLine("-install: install windows service");
+				Console.WriteLine("-uninstall: uninstall windows service");
+				Console.WriteLine("Running as a console applicaiton...");
+				svc.StartImpl();
+				Console.WriteLine("Press any key to stop . . .");
+				Console.ReadKey();
+				svc.StopImpl();
+			}
+			
 		}
 
-		static ushort? ParseUshort(string data)
-		{
-			return string.IsNullOrEmpty(data)
-				? default(ushort?)
-				: ushort.Parse(data)
-				;
-		}
+
 
 	}
 }
