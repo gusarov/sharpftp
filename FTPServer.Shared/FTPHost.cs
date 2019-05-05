@@ -84,6 +84,21 @@ namespace FTPServer
 			string stru;
 			int port = 0;
 
+			string myExternalIp;
+
+			public string GetMyExternalIp()
+			{
+				if (myExternalIp == null)
+				{
+					using (var client = new WebClient())
+					{
+						myExternalIp = client.DownloadString("https://api.ipify.org/");
+					}
+				}
+				return myExternalIp;
+			}
+
+
 			async Task<bool> EnsureData()
 			{
 				if (port == 0)
@@ -368,7 +383,14 @@ $"type=file;size={file.Length};modify={file.LastWriteTimeUtc:yyyyMMddHHmmss.fff}
 							{
 								DataClose();
 
-								var ip = ((IPEndPoint)_client.Client.LocalEndPoint).Address;
+								var cip = ((IPEndPoint)_client.Client.LocalEndPoint).Address;
+								var rip = ((IPEndPoint)_client.Client.RemoteEndPoint).Address;
+								var ip = cip.ToString();
+
+								if (rip.GetAddressBytes()[0] != cip.GetAddressBytes()[0]) // naive and fast detection of WAN client over LAN
+								{
+									ip = GetMyExternalIp();
+								}
 
 								if (_dataListener != null)
 								{
