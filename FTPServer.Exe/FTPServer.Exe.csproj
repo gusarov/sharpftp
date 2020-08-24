@@ -71,9 +71,9 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="TheServiceInstaller.resx">
+    <None Include="TheServiceInstaller.resx">
       <DependentUpon>TheServiceInstaller.cs</DependentUpon>
-    </EmbeddedResource>
+    </None>
   </ItemGroup>
   <Import Project="..\FTPServer.Shared\FTPServer.Shared.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
