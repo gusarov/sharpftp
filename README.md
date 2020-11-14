@@ -22,10 +22,10 @@ app.config:
 		<add key="dataPortTo" value="20999"/>
 	</auth>
 </configuration>
-```FTPServer.Exe.exe -install```
+```
 
 Install as Windows Service:
-```netsh advfirewall set global StatefulFtp enable```
+```FTPServer.Exe.exe -install```
 
 Automatic stateful firewall rule for Windows:
 ```netsh advfirewall set global StatefulFtp enable```
